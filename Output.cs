@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Output : MonoBehaviour
 {
-    public TextMeshProUGUI OutputField;
+    private TextMeshProUGUI OutputField;
     public static Output Component { private set; get; }
     // Start is called before the first frame update
     void Awake()
@@ -14,9 +14,12 @@ public class Output : MonoBehaviour
         Component = this;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void AddText(string text)
     {
-        
+        OutputField.text += text +'\n';
+    }
+    public void Reset()
+    {
+        OutputField.text = "";
     }
 }

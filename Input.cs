@@ -5,38 +5,54 @@ using UnityEngine;
 
 public class Input : MonoBehaviour
 {
-    public TMP_InputField InputField;
+    private TMP_InputField InputField;
+    private string outputBuf, tempBuf;
+    private SemanticType typeBuf = SemanticType.nulltype;
+    private List<KeyValuePair<SemanticType, string>> _tree;
+    private int mLine;
+    private bool er;
+    LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer();
     
-    
-    // Start is called before the first frame update
     void Awake()
     {
         InputField = GetComponent<TMP_InputField>();
     }
-
-    private string outputBuf, tempBuf;
-    private SemanticType typeBuf = SemanticType.nulltype;
-    private List<KeyValuePair<SemanticType, string>> tree;
-
-    private bool er;
-    // Update is called once per frame
     void Update()
     {
+        
+        if (er)
+        {
+            if (InputField.text[InputField.text.Length - 1] != '=') return;
+            Output.Component.Reset();
+            InputField.text = "";
+            mLine = 0;
+            er = false;
+            return;
+        }
         if (InputField.text.Length==0)  return;
-        if (InputField.text[InputField.text.Length-1] != '=') return;
-        var buffer = InputField.text.Trim(' ');
+        if (!EndOfLine(InputField.text[InputField.text.Length-1]) ) return;
+
+
+        var buffer = lexicalAnalyzer.CreateTokens(InputField.text.Trim(' '));
+        
         outputBuf = "";
         tempBuf = "";
         typeBuf = SemanticType.nulltype;
-        tree = new List<KeyValuePair<SemanticType, string>>();
-        er = false;
-        char c;
-        for (var i = 0; i < buffer.Length; i++)
+        _tree = new List<KeyValuePair<SemanticType, string>>();
+       
+       
+        for (var i = mLine; i < buffer.Length; i++)
         {
-            c = buffer[i];
-            if (c == '=')
+            var c = buffer[i];
+            if (EndOfLine(c))
             {
-                tree.Add(new KeyValuePair<SemanticType, string>(typeBuf, tempBuf));
+                _tree.Add(new KeyValuePair<SemanticType, string>(typeBuf, tempBuf));
+                mLine = i+2;
+                if (typeBuf == SemanticType.oper)
+                {
+                    er = true;
+                    outputBuf = Exp;
+                }
                 break;
             }
             if ( WhichType(c) != SemanticType.oper)
@@ -49,31 +65,51 @@ public class Input : MonoBehaviour
                 if (typeBuf == SemanticType.oper)
                 {
                     er = true;
-                    outputBuf = "Invalid expression";
+                    outputBuf = Exp;
                     break;
                 }
-                tree.Add(new KeyValuePair<SemanticType, string>(typeBuf, tempBuf));
+                _tree.Add(new KeyValuePair<SemanticType, string>(typeBuf, tempBuf));
                 typeBuf = WhichType(c);
                 tempBuf = ""+c;
-                tree.Add(new KeyValuePair<SemanticType, string>(typeBuf, tempBuf));
+                _tree.Add(new KeyValuePair<SemanticType, string>(typeBuf, tempBuf));
                 tempBuf = "";
             }
         }
        
         
         
-        if (!er) outputBuf = DecodingTree();
-        Output.Component.OutputField.text = outputBuf;
+        if (!er) outputBuf = DecodingTree(_tree);
+        Output.Component.AddText(outputBuf);
+        AddEnd();
     }
 
-    private SemanticType WhichType(char c)
+    private const string Exp = "Invalid expression \nInput \'=\' to restart";
+
+    private static bool EndOfLine(char c)
+    {
+        return c == '=' || c == ';' || c == '.'|| c == '\t';
+    }
+
+    private void AddEnd()
+    {
+        InputField.text += '\n';
+        InputField.ActivateInputField();
+        InputField.caretPosition = InputField.text.Length;
+    }
+
+    private static SemanticType WhichType(char c)
     {
         if (char.IsDigit(c)) return SemanticType.digit;
         if (c == '+' || c == '-' || c == '*' || c == '/') return SemanticType.oper;
         return SemanticType.nulltype;
     }
 
-    private string DecodingTree()
+    private string CreatingTree()
+    {
+        return "";
+    }
+
+    private static string DecodingTree(IReadOnlyList<KeyValuePair<SemanticType, string>> tree)
     {
         var str = "";
         for (var i = 0; i < tree.Count; i++)
@@ -89,15 +125,6 @@ public class Input : MonoBehaviour
         return str;
     }
 }
-              5+9*7-8
-               /  |  \
-         5+9*7    -   8
-        / | \
-       5  +  9*7
-              /|\
-              9 * 7
-
-9 7 * 5 + 8 -
 public enum SemanticType
 {
     digit,
@@ -105,13 +132,3 @@ public enum SemanticType
     expr,
     nulltype
 }
-
-
-/*
- if (typeBuf == SemanticType.oper && WhichType(c) == SemanticType.oper)
-            {
-                er = true;
-                outputBuf = "Invalid expression";
-                break;
-            }
-            */
