@@ -8,8 +8,24 @@ public class SymbolTable
 {
     private static int lst = 'a';
     private Dictionary<char, string> _chsd = new Dictionary<char, string>();
+    private static Dictionary<char, string> standart = new Dictionary<char, string>
+    {
+        {(char)0,"if"},
+        {(char)1,"else"},
+        {(char)2,"while"},
+        {(char)3,"do"},
+        {(char)4,"for"},
+        {(char)5,"float"},
+        {(char)6,"int"},
+        {(char)7,"float"},
+    };
     string str = "";
-    public SymbolTable() => lst = 'a';
+
+    public SymbolTable()
+    {
+        _chsd = standart;
+        lst = 'a';
+    }
 
     private string GetValue(char key)
     {
