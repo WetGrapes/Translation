@@ -60,27 +60,44 @@ public class Input : MonoBehaviour
             }
         }
        
-        if (!er) for (var i = 0; i < tree.Count; i++)
-        {
-            if(tree[i].Key == SemanticType.oper){
-                outputBuf += tree[i+1].Value + " ";
-                outputBuf += tree[i].Value + " ";
-                i++;
-            } else
-                outputBuf += tree[i].Value + " ";
-        }
-
+        
+        
+        if (!er) outputBuf = DecodingTree();
         Output.Component.OutputField.text = outputBuf;
     }
 
     private SemanticType WhichType(char c)
     {
         if (char.IsDigit(c)) return SemanticType.digit;
-        if (c == '+' || c == '-') return SemanticType.oper;
+        if (c == '+' || c == '-' || c == '*' || c == '/') return SemanticType.oper;
         return SemanticType.nulltype;
     }
-}
 
+    private string DecodingTree()
+    {
+        var str = "";
+        for (var i = 0; i < tree.Count; i++)
+        {
+            if(tree[i].Key == SemanticType.oper){
+                str += tree[i+1].Value + " ";
+                str += tree[i].Value + " ";
+                i++;
+            } else
+                str += tree[i].Value + " ";
+        }
+
+        return str;
+    }
+}
+              5+9*7-8
+               /  |  \
+         5+9*7    -   8
+        / | \
+       5  +  9*7
+              /|\
+              9 * 7
+
+9 7 * 5 + 8 -
 public enum SemanticType
 {
     digit,
