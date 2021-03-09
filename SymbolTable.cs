@@ -19,11 +19,28 @@ public class SymbolTable
         {(char)6,"int"},
         {(char)7,"float"},
     };
+    private static Dictionary<char, string> symbols = new Dictionary<char, string>
+    {
+        {(char)20,"+"},
+        {(char)21,"-"},
+        {(char)22,"*"},
+        {(char)23,"/"},
+        {(char)24,"("},
+        {(char)25,")"},
+        {(char)26,"{"},
+        {(char)27,"}"},
+        {(char)28,"["},
+        {(char)29,"]"},
+        {(char)30,">"},
+        {(char)31,"<"},
+        {(char)32,"="},
+    };
     string str = "";
 
     public SymbolTable()
     {
         _chsd = standart;
+        foreach (var symbol in symbols) _chsd.Add(symbol.Key, symbol.Value);
         lst = 'a';
     }
 

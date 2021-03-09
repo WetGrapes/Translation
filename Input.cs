@@ -87,7 +87,7 @@ public class Input : MonoBehaviour
 
     private static bool EndOfLine(char c)
     {
-        return c == '=' || c == ';' || c == '.'|| c == '\t';
+        return c == '=' || c == ';' || c == '.'|| c == '\t'|| c == '`';
     }
 
     private void AddEnd()
